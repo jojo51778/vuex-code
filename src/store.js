@@ -2,10 +2,33 @@ import Vue from 'vue'
 import Vuex from './vuex'
 
 Vue.use(Vuex)
-
+// function logger(store) {
+//   let prevState = JSON.stringify(store.state)
+//   store.subscribe((mutation, newState) => {
+//     console.log(prevState)
+//     console.log(mutation)
+//     console.log(JSON.stringify(newState))
+//     prevState = JSON.stringify(newState)
+//   })
+// }
+function presists(store) {
+  let local = localStorage.getItem('VUEX:state')
+  if(local) {
+    store.replaceState(JSON.parse(local)) //替换状态
+  }
+  store.subscribe((mutation, state) => {
+    localStorage.setItem('VUEX:state', JSON.stringify(state))
+  })
+}
 let store = new Vuex.Store({
+  strict: true,
+  plugins: [
+    // logger
+    presists
+  ],
   modules: {
     a: {
+      namespaced: true,
       state: {
         age: 'a100',
       },
@@ -26,6 +49,7 @@ let store = new Vuex.Store({
       },
       modules: {
         c: {
+          namespaced: true,
           state: {
             age: 'c100'
           },
@@ -41,7 +65,6 @@ let store = new Vuex.Store({
   state: {
     age: 10
   },
-  strict: true,
   getters: {
     myAge(state) {
       return state.age + 20
@@ -49,7 +72,9 @@ let store = new Vuex.Store({
   },
   mutations: {
     syncChange(state, payload) {
-      state.age += payload
+      setTimeout(() => {
+        state.age += payload
+      },1000)
     }
   },
   actions: {
@@ -60,7 +85,7 @@ let store = new Vuex.Store({
     }
   }
 })
-store.registerModule('d', {
+store.registerModule(['b', 'd'], {
   state: {
     age: 'd100'
   }
